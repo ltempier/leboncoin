@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start":"PORT=80 node server.js ",
+    "start":"PORT=9000 node server.js ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
