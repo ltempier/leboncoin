@@ -1,4 +1,5 @@
 
+const serverless = require('serverless-http');
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
@@ -77,4 +78,5 @@ app.get('/ads', function (req, res) {
 // })
 
 module.exports = app;
+module.exports.handler = serverless(app);
 
