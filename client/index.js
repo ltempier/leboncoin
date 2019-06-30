@@ -124,6 +124,7 @@ function vote(id, value) {
    }
    else
       markersVoted[id] = value
+   markers[id].setIcon(getMarkerIcon(value))
    localStorage.setItem("markersVoted", JSON.stringify(markersVoted));
 }
 
