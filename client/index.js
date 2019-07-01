@@ -12,10 +12,10 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
 
 
 let mapLayers = [
-   { name: "< 20000 m²", min: 0 },
-   { name: "> 20000 m²", min: 20000 },
-   { name: "> 50000 m²", min: 50000 },
-   { name: "> 100000 m²", min: 100000 }
+   { name: "< 2 ha", min: 0 },
+   { name: "> 2 ha", min: 20000 },
+   { name: "> 5 ha", min: 50000 },
+   { name: "> 10 ha", min: 100000 }
 ].sort((c) => c.min)
 
 let mapControl = {};
