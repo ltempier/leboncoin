@@ -1,15 +1,49 @@
-const mymap = L.map('map').setView([46.2, 4.1], 6);
+
+
+
+const mymap = L.map('map', { attributionControl: false }).setView([46.2, 4.1], 6);
+
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
    maxZoom: 18,
    attribution: '',
    id: 'mapbox.streets'
 }).addTo(mymap);
 
+
+
+let layers = [
+   { name: "< 20000 m²", min: 0 },
+   { name: "> 20000 m²", min: 20000 },
+   { name: "> 50000 m²", min: 50000 },
+   { name: "> 100000 m²", min: 100000 }
+].sort((c) => c.min)
+
+let mapLayers = {};
+layers.forEach(function (layer, idx) {
+   let nextLayer = layers[idx + 1];
+   if (nextLayer)
+      layer.max = nextLayer.min
+
+   layer.layerGroup = L.layerGroup().addTo(mymap);
+   mapLayers[layer.name] = layer.layerGroup
+})
+
+// let markersLayer = L.layerGroup().addTo(mymap);
+
+L.control.layers(null, mapLayers).addTo(mymap);
+
+
 let markers = {};
 let markersVoted = JSON.parse(localStorage.getItem("markersVoted") || "{}");
 
 let offset = 0;
-function fetchMore() {
+function fetchMore(reset) {
+
+   if (reset) {
+      markers = {}
+      offset = 0
+   }
+
    fetch("/ads?offset=" + offset)
       .then((response) => response.json())
       .then(function (ads) {
@@ -22,6 +56,7 @@ function fetchMore() {
 
             ad.publicationDate = moment(ad.first_publication_date, 'YYYY-MM-DD HH:mm:ss')
             ad.deltaDateDays = moment().diff(ad.publicationDate, "days")
+            ad.square = ad.attributes.find((attribute) => attribute.key === "square")
 
             if (ad.deltaDateDays > 300)
                return
@@ -61,11 +96,22 @@ function fetchMore() {
             }
 
 
+            const adLayer = layers.find((layer) => {
+               const squareValue = parseInt(ad.square.value)
+               if (layer.min && layer.max)
+                  return squareValue >= layer.min && squareValue < layer.max
+               else if (layer.min)
+                  return squareValue >= layer.min
+               else if (layer.max)
+                  return squareValue < layer.max
+            })
+
+
             const marker = L.marker([ad.location.lat, ad.location.lng])
                .setIcon(getMarkerIcon(markerValue))
-               .addTo(mymap)
                .bindPopup(htmlPopup(ad))
-               .setOpacity(opacity);
+               .setOpacity(opacity)
+               .addTo(adLayer.layerGroup);
 
             markers[ad.list_id] = marker
 
@@ -78,13 +124,11 @@ function fetchMore() {
 fetchMore();
 
 function htmlPopup(ad) {
-   const imgs = ad.images.urls_thumb || []
-   const square = ad.attributes.find((attribute) => attribute.key === "square")
 
    return `
         <div class='map-popup'>
                 <p><b>date:</b> ${ad.publicationDate.format('DD/MM/YYYY HH:mm:ss')} (${ad.deltaDateDays} Jours)</p>
-                <p><b>surface:</b> ${square.value_label}</p>
+                <p><b>surface:</b> ${ad.square.value_label}</p>
                 <p><b>prix:</b> ${ad.price[0]} €</p>
 
                 <a href=${ad.url} target="_blank">${ad.url}</a>
@@ -92,16 +136,15 @@ function htmlPopup(ad) {
                 <div class='btn-popup'>
                         <div class='btn-group'>
                                 <button type="button" class="btn btn-success" onclick="vote(${ad.list_id},1)">bien</button>
-                                <button type="button" class="btn btn-danger" onclick="vote(${ad.list_id},2)">null</button>
+                                <button type="button" class="btn btn-danger" onclick="vote(${ad.list_id},2)">nul</button>
                                 <button type="button" class="btn btn-warning" onclick="vote(${ad.list_id},3)">gold</button>
                         </div>
                 </div>
 
                 <div class='img-popup'>
-                ${imgs.map(img => `<img src='${img}'/>`)}
+                ${(ad.images.urls_thumb || []).map(img => `<img src='${img}'/>`)}
                 </div>
-        </div>
-        `
+        </div>`
 }
 
 

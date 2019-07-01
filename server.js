@@ -16,9 +16,14 @@ app.use(bodyParser.json());
 app.use(express.static(path.resolve(__dirname, 'client')));
 
 app.get('/ads', function (req, res) {
+
    let offset = 0
-   try { offset = parseInt(req.query.offset) }
-   catch (e) { }
+   if (!isNaN((parseInt(req.query.offset))))
+      offset = parseInt(req.query.offset)
+
+   let areaMin = 10000
+   if (!isNaN((parseInt(req.query.areaMin))))
+      areaMin = parseInt(req.query.areaMin)
 
    axios({
       method: 'post',
@@ -36,7 +41,7 @@ app.get('/ads', function (req, res) {
             },
             keywords: {},
             ranges: {
-               "square": { "min": 10000 },
+               "square": { "min": areaMin },
                "price": { "min": 1000, "max": 60000 }
             }
          },
