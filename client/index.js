@@ -11,26 +11,26 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
 
 
 
-let layers = [
+let mapLayers = [
    { name: "< 20000 m²", min: 0 },
    { name: "> 20000 m²", min: 20000 },
    { name: "> 50000 m²", min: 50000 },
    { name: "> 100000 m²", min: 100000 }
 ].sort((c) => c.min)
 
-let mapLayers = {};
-layers.forEach(function (layer, idx) {
-   let nextLayer = layers[idx + 1];
+let mapControl = {};
+mapLayers.forEach(function (layer, idx) {
+   let nextLayer = mapLayers[idx + 1];
    if (nextLayer)
       layer.max = nextLayer.min
 
    layer.layerGroup = L.layerGroup().addTo(mymap);
-   mapLayers[layer.name] = layer.layerGroup
+   mapControl[layer.name] = layer.layerGroup
 })
 
 // let markersLayer = L.layerGroup().addTo(mymap);
 
-L.control.layers(null, mapLayers).addTo(mymap);
+L.control.layers(null, mapControl).addTo(mymap);
 
 
 let markers = {};
@@ -96,7 +96,7 @@ function fetchMore(reset) {
             }
 
 
-            const adLayer = layers.find((layer) => {
+            const adLayer = mapLayers.find((layer) => {
                const squareValue = parseInt(ad.square.value)
                if (layer.min && layer.max)
                   return squareValue >= layer.min && squareValue < layer.max
