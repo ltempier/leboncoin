@@ -34,7 +34,7 @@ L.control.layers(null, mapControl).addTo(mymap);
 
 
 let markers = {};
-let markersVoted = JSON.parse(localStorage.getItem("markersVoted") || "{}");
+let markersVoted = store.get('markersVoted') || {}
 
 let offset = 0;
 function fetchMore(reset) {
@@ -47,7 +47,7 @@ function fetchMore(reset) {
    fetch("/ads?offset=" + offset)
       .then((response) => response.json())
       .then(function (ads) {
-         console.log(ads)
+         console.log("ads", ads)
 
          offset += ads.length
          ads.forEach(ad => {
@@ -168,7 +168,8 @@ function vote(id, value) {
    else
       markersVoted[id] = value
    markers[id].setIcon(getMarkerIcon(value))
-   localStorage.setItem("markersVoted", JSON.stringify(markersVoted));
+
+   store.set('markersVoted', markersVoted);
 }
 
 // function fetchInfos() {
