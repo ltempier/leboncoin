@@ -44,7 +44,23 @@ function fetchMore(reset) {
       offset = 0
    }
 
-   fetch("/ads?offset=" + offset)
+   var query = {
+      offset: offset,
+      priceMax: 60000,
+      priceMin: 1000
+   }
+
+   var urlParams = new URLSearchParams(location.search);
+   ['priceMax', 'priceMin', 'areaMin'].forEach(function (paramName) {
+      if (urlParams.has(paramName))
+         query[paramName] = urlParams.get(paramName)
+   })
+
+
+   fetch("/ads?" + Object.keys(query).map(function (key) {
+      return [key, query[key]].join('=')
+   }).join("&"))
+
       .then((response) => response.json())
       .then(function (ads) {
          console.log("ads", ads)
