@@ -24,6 +24,8 @@ async function fetchAds(body, callback) {
 
    const browser = await puppeteer.launch({
       // headless: false
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
    });
    const page = await browser.newPage();
 
@@ -70,7 +72,7 @@ async function captcha(resetCookie, callback) {
 
    if (_.isFunction(callback)) {
       try {
-         const res = await captcha(body)
+         const res = await captcha(resetCookie)
          callback(null, res)
       } catch (e) {
          callback(e)
@@ -92,7 +94,9 @@ async function captcha(resetCookie, callback) {
 
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
-      await page.waitForFunction(`document.title !== "${pageBlockedTitle}"`, { timeout: 0 });
+
+      await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0, polling: 1000 });
+
       cookies = await page.cookies()
       saveCookies(cookies); //save cookies
    }
