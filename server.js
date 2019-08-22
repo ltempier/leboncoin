@@ -5,13 +5,15 @@ process.env.IP = process.env.IP || "0.0.0.0";
 
 const express = require('express');
 const bodyParser = require('body-parser');
-// const axios = require('axios');
+const axios = require('axios');
 const path = require('path');
 const morgan = require('morgan');
 const fs = require('fs');
 const _ = require('lodash');
-const chrome = require('./tools/chrome');
 const cors = require('cors')
+
+const chrome = require('./tools/chrome');
+const tools = require('./tools');
 
 const app = express();
 
@@ -24,65 +26,51 @@ app.use(express.static(path.resolve(__dirname, 'client')));
 // const Datastore = require('nedb');
 // const db = new Datastore({ filename: './ads.db', autoload: true });
 
-app.get('/ads', function (req, res, next) {
-   const params = {
-      string: [],
-      float: [],
-      int: [
-         {
-            key: 'offset',
-            default: 0
+app.get('/ads', tools.paramsMiddleware, function (req, res) {
+   chrome.fetchAds({
+      limit: req.query.limit,
+      offset: req.query.offset,
+      filters: {
+         category: {
+            id: "9" //vente immo
          },
-         {
-            key: 'areaMin',
-            default: 10000
+         enums: {
+            ad_type: ["offer"],
+            real_estate_type: ["3"] //terrain
          },
-         {
-            key: 'priceMin',
-            default: 1000
-         },
-         {
-            key: 'priceMax',
-            default: 70000
-         },
-         {
-            key: 'limit',
-            default: 300
+         keywords: {},
+         ranges: {
+            "square": { "min": req.query.areaMin },
+            "price": { "min": req.query.priceMin, "max": req.query.priceMax }
          }
-      ]
-   }
-
-   params.string.forEach((stringParam) => {
-      if (req.query[stringParam.key] && req.query[stringParam.key].length >= 0)
-         req.query[stringParam.key] = req.query[stringParam.key]
-      else if (stringParam.default)
-         req.query[stringParam.key] = stringParam.default
+      },
+      sort_by: "time",
+      sort_order: "desc"
+   }, function (err, result) {
+      if (err)
+         res.status(500).send(err.message)
       else
-         delete req.query[stringParam.key]
+         res.status(200).json(result.ads || [])
    })
+})
 
-   params.float.forEach((intParam) => {
-      if (!isNaN((parseFloat(req.query[intParam.key]))))
-         req.query[intParam.key] = parseFloat(req.query[intParam.key])
-      else if (!isNaN(intParam.default))
-         req.query[intParam.key] = intParam.default
-      else
-         delete req.query[intParam.key]
-   })
 
-   params.int.forEach((intParam) => {
-      if (!isNaN((parseInt(req.query[intParam.key]))))
-         req.query[intParam.key] = parseInt(req.query[intParam.key])
-      else if (!isNaN(intParam.default))
-         req.query[intParam.key] = intParam.default
-      else
-         delete req.query[intParam.key]
-   })
+app.post('/cookies', cors(), function (req, res) {
+   if (req.body.cookies && req.body.cookies.length) {
+      chrome.saveCookies(req.body.cookies)
+      res.sendStatus(200)
+   } else
+      res.status(500).send(`req.body.cookies: ${req.body.cookies}
+      req.body.cookies.length: ${req.body.cookies ? req.body.cookies.length : '-1'}`)
+})
 
-   next()
-},
-   function (req, res) {
-      chrome.fetchAds({
+
+app.get('/old', tools.paramsMiddleware, function (req, res) {
+
+   axios({
+      method: 'post',
+      url: 'https://api.leboncoin.fr/finder/search',
+      data: {
          limit: req.query.limit,
          offset: req.query.offset,
          filters: {
@@ -95,29 +83,44 @@ app.get('/ads', function (req, res, next) {
             },
             keywords: {},
             ranges: {
-               "square": { "min": req.query.areaMin + _.random(-100, 100) },
-               "price": { "min": req.query.priceMin + _.random(-100, 100), "max": req.query.priceMax + _.random(-100, 100) }
+               "square": { "min": req.query.areaMin },
+               "price": { "min": req.query.priceMin, "max": req.query.priceMax }
             }
          },
          sort_by: "time",
          sort_order: "desc"
-      }, function (err, result) {
-         if (err)
-            res.status(500).send(err.message)
-         else
-            res.status(200).json(result.ads || [])
-      })
-   })
+      },
+      config: {
+         headers: {
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
+            "Content-Type": "text/plain;charset=UTF-8"
+         }
+      }
+   }).then(function (response) {
+      res.status(200).json(response);
+   }).catch(function (error) {
+      res.status(500).json(error.response);
 
-
-app.post('/cookies', cors(), function (req, res) {
-   if (req.body.cookies && req.body.cookies.length) {
-      chrome.saveCookies(req.body.cookies)
-      res.sendStatus(200)
-   } else
-      res.status(500).send(`req.body.cookies: ${req.body.cookies}
-      req.body.cookies.length: ${req.body.cookies ? req.body.cookies.length : '-1'}`)
+      // const url = new URL(error.response.data.url)
+      // const html = `
+      // <html>
+      // <head>
+      //    <title>You have been blocked</title>
+      //    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      // </head>
+      // <body style="margin:0">
+      //    <script>var dd = { 'cid': '${url.searchParams.get('initialCid')}', 'hsh': '${url.searchParams.get('hash')}', 't': '${url.searchParams.get('t')}' }</script>
+      //    <script src="https://ct.datado.me/c.js"></script>
+      //    <iframe
+      //       src="${url.toString()}"
+      //       width="100%" height="100%" style="height:100vh;" frameborder="0" border="0" scrolling="yes"></iframe>
+      // </body>
+      // </html>
+      // `
+      // res.send(html);
+   });
 })
+
 
 app.listen(process.env.PORT, process.env.IP, function (err) {
    if (err)

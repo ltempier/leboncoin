@@ -82,7 +82,8 @@ async function captcha(resetCookie, callback) {
 
 
    const browser = await puppeteer.launch({
-      headless: false
+      headless: false,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
    });
 
    const page = await browser.newPage();
@@ -95,13 +96,15 @@ async function captcha(resetCookie, callback) {
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
 
-      await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0, polling: 1000 });
+
+      await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0 });
 
       cookies = await page.cookies()
       saveCookies(cookies); //save cookies
    }
 
    await browser.close();
+   return cookies
 }
 
 
