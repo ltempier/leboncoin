@@ -5,9 +5,13 @@ process.env.IP = process.env.IP || "0.0.0.0";
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
+// const axios = require('axios');
 const path = require('path');
 const morgan = require('morgan');
+const fs = require('fs');
+const _ = require('lodash');
+const chrome = require('./tools/chrome');
+const cors = require('cors')
 
 const app = express();
 
@@ -17,8 +21,13 @@ app.use(morgan(":date[iso] - :method :url :status - :response-time ms"));
 
 app.use(express.static(path.resolve(__dirname, 'client')));
 
+// const Datastore = require('nedb');
+// const db = new Datastore({ filename: './ads.db', autoload: true });
+
 app.get('/ads', function (req, res, next) {
    const params = {
+      string: [],
+      float: [],
       int: [
          {
             key: 'offset',
@@ -34,7 +43,7 @@ app.get('/ads', function (req, res, next) {
          },
          {
             key: 'priceMax',
-            default: 60000
+            default: 70000
          },
          {
             key: 'limit',
@@ -43,76 +52,72 @@ app.get('/ads', function (req, res, next) {
       ]
    }
 
+   params.string.forEach((stringParam) => {
+      if (req.query[stringParam.key] && req.query[stringParam.key].length >= 0)
+         req.query[stringParam.key] = req.query[stringParam.key]
+      else if (stringParam.default)
+         req.query[stringParam.key] = stringParam.default
+      else
+         delete req.query[stringParam.key]
+   })
+
+   params.float.forEach((intParam) => {
+      if (!isNaN((parseFloat(req.query[intParam.key]))))
+         req.query[intParam.key] = parseFloat(req.query[intParam.key])
+      else if (!isNaN(intParam.default))
+         req.query[intParam.key] = intParam.default
+      else
+         delete req.query[intParam.key]
+   })
+
    params.int.forEach((intParam) => {
       if (!isNaN((parseInt(req.query[intParam.key]))))
          req.query[intParam.key] = parseInt(req.query[intParam.key])
       else if (!isNaN(intParam.default))
          req.query[intParam.key] = intParam.default
+      else
+         delete req.query[intParam.key]
    })
 
    next()
 },
    function (req, res) {
-
-      axios({
-         method: 'post',
-         url: 'https://api.leboncoin.fr/finder/search',
-         data: {
-            limit: req.query.limit,
-            offset: req.query.offset,
-            filters: {
-               category: {
-                  id: "9" //vente immo
-               },
-               enums: {
-                  ad_type: ["offer"],
-                  real_estate_type: ["3"] //terrain
-               },
-               keywords: {},
-               ranges: {
-                  "square": { "min": req.query.areaMin },
-                  "price": { "min": req.query.priceMin, "max": req.query.priceMax }
-               }
+      chrome.fetchAds({
+         limit: req.query.limit,
+         offset: req.query.offset,
+         filters: {
+            category: {
+               id: "9" //vente immo
             },
-            sort_by: "time",
-            sort_order: "desc"
-         },
-         config: {
-            headers: {
-               'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
-               "Content-Type": "text/plain;charset=UTF-8"
+            enums: {
+               ad_type: ["offer"],
+               real_estate_type: ["3"] //terrain
+            },
+            keywords: {},
+            ranges: {
+               "square": { "min": req.query.areaMin + _.random(-100, 100) },
+               "price": { "min": req.query.priceMin + _.random(-100, 100), "max": req.query.priceMax + _.random(-100, 100) }
             }
-         }
-      }).then(function (response) {
-         res.status(200).json(response.data.ads || [])
-      }).catch(function (error) {
-         console.log('error', error);
-         res.status(500).json(ads)
-      });
+         },
+         sort_by: "time",
+         sort_order: "desc"
+      }, function (err, result) {
+         if (err)
+            res.status(500).send(err.message)
+         else
+            res.status(200).json(result.ads || [])
+      })
    })
 
-// const Datastore = require('nedb');
-// const db = new Datastore({ filename: './infos.db', autoload: true })
-// app.get('/infos', function (req, res) {
-//    db.find({}, function (err, infos) {
-//       if (err)
-//          res.status(500).send(err.message)
-//       else
-//          res.status(200).json(infos)
-//    })
-// })
-// app.post('/infos/:id', function (req, res) {
-//    const info = {
-//       id: req.params.id,
-//       ...req.body
-//    }
-//    database.pixels.update({ id: info.id }, info, { upsert: true }, function (err) {
-//       if (err)
-//          res.status(500).send(err.message)
-//       else
-//          res.status(200).json(info)
-//    })
-// })
+
+app.post('/cookies', cors(), function (req, res) {
+   if (req.body.cookies && req.body.cookies.length) {
+      chrome.saveCookies(req.body.cookies)
+      res.sendStatus(200)
+   } else
+      res.status(500).send(`req.body.cookies: ${req.body.cookies}
+      req.body.cookies.length: ${req.body.cookies ? req.body.cookies.length : '-1'}`)
+})
 
 app.listen(process.env.PORT, process.env.IP, function (err) {
    if (err)
