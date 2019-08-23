@@ -1,5 +1,3 @@
-
-
 process.env.PORT = process.env.PORT || 1337;
 process.env.IP = process.env.IP || "0.0.0.0";
 
@@ -11,6 +9,7 @@ const morgan = require('morgan');
 const fs = require('fs');
 const _ = require('lodash');
 const cors = require('cors')
+const fetch = require("node-fetch");
 
 const chrome = require('./tools/chrome');
 const tools = require('./tools');
@@ -64,9 +63,46 @@ app.post('/cookies', cors(), function (req, res) {
       req.body.cookies.length: ${req.body.cookies ? req.body.cookies.length : '-1'}`)
 })
 
+app.get('/test', tools.paramsMiddleware, function (req, res) {
+
+   fetch(chrome.lbcApiSearchUrl, {
+      "method": "POST",
+      "body": tools.JsonStringifyRandom({
+         limit: req.query.limit,
+         offset: req.query.offset,
+         filters: {
+            category: {
+               id: "9" //vente immo
+            },
+            enums: {
+               ad_type: ["offer"],
+               real_estate_type: ["3"] //terrain
+            },
+            keywords: {},
+            ranges: {
+               "square": { "min": req.query.areaMin },
+               "price": { "min": req.query.priceMin, "max": req.query.priceMax }
+            }
+         },
+         sort_by: "time",
+         sort_order: "desc"
+      }),
+      // "credentials": "include",
+      // "headers": {
+      //    'Accept': 'application/json',
+      //    'Content-Type': 'application/json',
+      //    'Cache': 'no-cache', // This is set on request
+      //    'Cookie': chrome.loadCookies().map(cookie=>[cookie.name, cookie.value].join('=')).join('; ')
+      // }
+   }).then(response => response.json())
+      .then(function (response) {
+         res.status(200).json(response);
+      }).catch(function (error) {
+         res.status(500).json(error.response);
+      })
+})
 
 app.get('/old', tools.paramsMiddleware, function (req, res) {
-
    axios({
       method: 'post',
       url: 'https://api.leboncoin.fr/finder/search',
@@ -92,35 +128,22 @@ app.get('/old', tools.paramsMiddleware, function (req, res) {
       },
       config: {
          headers: {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
-            "Content-Type": "text/plain;charset=UTF-8"
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
+            'Accept-Language': '*',
+            'Accept': '*/*',
+            'Accept-Encoding':  'gzip, deflate, br',
+            'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            'Content-Type': 'application/json',
+            'Referer': "https://www.leboncoin.fr/recherche/",
+            'Origin': 'https://www.leboncoin.fr'
          }
       }
    }).then(function (response) {
       res.status(200).json(response);
    }).catch(function (error) {
       res.status(500).json(error.response);
-
-      // const url = new URL(error.response.data.url)
-      // const html = `
-      // <html>
-      // <head>
-      //    <title>You have been blocked</title>
-      //    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      // </head>
-      // <body style="margin:0">
-      //    <script>var dd = { 'cid': '${url.searchParams.get('initialCid')}', 'hsh': '${url.searchParams.get('hash')}', 't': '${url.searchParams.get('t')}' }</script>
-      //    <script src="https://ct.datado.me/c.js"></script>
-      //    <iframe
-      //       src="${url.toString()}"
-      //       width="100%" height="100%" style="height:100vh;" frameborder="0" border="0" scrolling="yes"></iframe>
-      // </body>
-      // </html>
-      // `
-      // res.send(html);
    });
 })
-
 
 app.listen(process.env.PORT, process.env.IP, function (err) {
    if (err)

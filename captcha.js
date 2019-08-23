@@ -7,7 +7,7 @@ const axios = require('axios');
 const serverUrl = "http://danstontourdumonde.com:4000"
 
 
-chrome.captcha(true, function (err, cookies) {
+chrome.captcha(false, function (err, cookies) {
    if (cookies && cookies.length) {
       axios.post(serverUrl + '/cookies', { cookies })
          .then(response => {

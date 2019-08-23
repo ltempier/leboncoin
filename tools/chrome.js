@@ -2,6 +2,7 @@ const _ = require('lodash');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
+const tools = require('./index');
 
 
 const lbcUrl = 'https://www.leboncoin.fr';
@@ -51,7 +52,7 @@ async function fetchAds(body, callback) {
             "body": bodyStr,
             "credentials": "include"
          }).then(res => res.json())
-      }, lbcApiSearchUrl, JSON.stringify(body, null));
+      }, lbcApiSearchUrl, tools.JsonStringifyRandom(body));
 
       saveCookies(await page.cookies()); //save cookies
       await browser.close();
@@ -83,7 +84,9 @@ async function captcha(resetCookie, callback) {
 
    const browser = await puppeteer.launch({
       headless: false,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
+      ignoreHTTPSErrors: true,
    });
 
    const page = await browser.newPage();
@@ -91,6 +94,7 @@ async function captcha(resetCookie, callback) {
       console.log('reset cookies')
    } else
       await page.setCookie(...loadCookies())
+
    await page.goto(lbcUrl);
 
    let cookies = [];
@@ -119,7 +123,9 @@ function loadCookies() {
 }
 
 module.exports = {
+   lbcApiSearchUrl,
    fetchAds,
    captcha,
-   saveCookies
+   saveCookies,
+   loadCookies
 }
