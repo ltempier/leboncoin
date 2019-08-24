@@ -26,34 +26,57 @@ const body = {
    sort_order: "desc"
 };
 
+const header = {
+   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
+   'Accept-Language': '*',
+   'Accept': '*/*',
+   'Accept-Encoding': 'gzip, deflate, br',
+   'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
+   'Content-Type': 'application/json',
+   'Referer': "https://www.leboncoin.fr/recherche/",
+   'Origin': 'https://www.leboncoin.fr'
+}
+
+
+/**************************************************************
+TEST TOR Proxy
+***************************************************************/
+
+axios({
+   method: 'post',
+   url: 'https://api.leboncoin.fr/finder/search',
+   data: body,
+   config: {
+      headers: header
+   },
+   // proxy: {
+   //    host: "51.15.143.226",
+   //    port: 8118
+   // },
+   timeout: 10000
+}).then(function (response) {
+   console.log('response.data', response.data)
+}).catch(function (error) {
+   console.log('error', error.message)
+});
+
 
 /**************************************************************
 TEST fetch + JsonStringifyRandom
 ***************************************************************/
 
-(function () {
-   fetch(chrome.lbcApiSearchUrl, {
-      "method": "POST",
-      "body": tools.JsonStringifyRandom(body),
-      "headers": {
-         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
-         'Accept-Language': '*',
-         'Accept': '*/*',
-         'Accept-Encoding': 'gzip, deflate, br',
-         'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-         'Content-Type': 'application/json',
-         'Referer': "https://www.leboncoin.fr/recherche/",
-         'Origin': 'https://www.leboncoin.fr'
-      }
-   }).then(response => response.json())
-      .then(function (response) {
-         console.log("response",response)
-      }).catch(function (error) {
-         console.log("error",error)
-      });
-})();
-
-
+// (function () {
+//    fetch(chrome.lbcApiSearchUrl, {
+//       "method": "POST",
+//       "body": tools.JsonStringifyRandom(body),
+//       "headers": header
+//    }).then(response => response.json())
+//       .then(function (response) {
+//          console.log("response",response)
+//       }).catch(function (error) {
+//          console.log("error",error)
+//       });
+// })();
 
 /**************************************************************
 TEST require('leboncoin-api')
@@ -154,7 +177,7 @@ TEST FN chrome.fetchAds(body) await
 
 
 /**************************************************************
-TEST avec require('proxy-sources');
+TEST with PROXY from require('proxy-sources');
 ***************************************************************/
 
 // (async function () {
@@ -171,16 +194,7 @@ TEST avec require('proxy-sources');
 //          // method: 'get',
 //          // url: 'http://www.likecool.com/',
 //          config: {
-//             headers: {
-//                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
-//                'Accept-Language': '*',
-//                'Accept': '*/*',
-//                'Accept-Encoding': 'gzip, deflate, br',
-//                'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-//                'Content-Type': 'application/json',
-//                'Referer': "https://www.leboncoin.fr/recherche/",
-//                'Origin': 'https://www.leboncoin.fr'
-//             }
+//             headers:header
 //          },
 //          proxy: {
 //             host: proxy[0],
@@ -203,7 +217,7 @@ TEST avec require('proxy-sources');
 
 
 /**************************************************************
-TEST avec require('proxy-lists')
+TEST with PROXY from require('proxy-lists')
 ***************************************************************/
 
 // (function () {
@@ -230,16 +244,7 @@ TEST avec require('proxy-lists')
 //                // method: 'get',
 //                // url: 'http://www.likecool.com/',
 //                config: {
-//                   headers: {
-//                      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
-//                      'Accept-Language': '*',
-//                      'Accept': '*/*',
-//                      'Accept-Encoding': 'gzip, deflate, br',
-//                      'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
-//                      'Content-Type': 'application/json',
-//                      'Referer': "https://www.leboncoin.fr/recherche/",
-//                      'Origin': 'https://www.leboncoin.fr'
-//                   }
+//                   headers: header
 //                },
 //                proxy: {
 //                   host: proxy.ipAddress,

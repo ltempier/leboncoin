@@ -29,15 +29,17 @@ mapLayers.forEach(function (layer, idx) {
 })
 
 // let markersLayer = L.layerGroup().addTo(mymap);
-
 L.control.layers(null, mapControl).addTo(mymap);
-
 
 let markers = {};
 let markersVoted = store.get('markersVoted') || {}
 
 let offset = 0;
 function fetchMore(reset) {
+
+   $("#more-ads")
+      .text('loading ...')
+      .prop("disabled", true)
 
    if (reset) {
       markers = {}
@@ -131,9 +133,13 @@ function fetchMore(reset) {
 
             markers[ad.list_id] = marker
 
+            $("#more-ads").text('plus resultats')
+            if (ads.length > 0)
+               $("#more-ads").prop("disabled", false)
          });
       }).catch(function (error) {
          console.log('error', error);
+         $("#more-ads").text('plus resultats (erreur)').prop("disabled", false)
       });
 }
 
@@ -223,3 +229,5 @@ function getMarkerIcon(value) {
          break
    }
 }
+
+

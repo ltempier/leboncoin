@@ -22,11 +22,10 @@ async function fetchAds(body, callback) {
       return
    }
 
-
    const browser = await puppeteer.launch({
       // headless: false
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      // headless: true,
+      // args: ['--no-sandbox', '--disable-setuid-sandbox']
    });
    const page = await browser.newPage();
 
@@ -50,8 +49,14 @@ async function fetchAds(body, callback) {
          return fetch(url, {
             "method": "POST",
             "body": bodyStr,
-            "credentials": "include"
-         }).then(res => res.json())
+            "credentials": "include",
+            "headers": tools.queryHeader,
+         }).then(res => {
+            if (res.status === 200)
+               return res.json()
+            else
+               throw new Error('res.status != 200')
+         })
       }, lbcApiSearchUrl, tools.JsonStringifyRandom(body));
 
       saveCookies(await page.cookies()); //save cookies
