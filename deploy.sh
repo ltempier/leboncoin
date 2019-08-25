@@ -1,4 +1,5 @@
 echo "****** PUSH TO GIT ******"
+git commit add .
 git commit -am 'from deploy.sh'
 git push
 
