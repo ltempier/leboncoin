@@ -46,8 +46,10 @@ app.get('/ads', tools.paramsMiddleware, function (req, res) {
       sort_by: "time",
       sort_order: "desc"
    }, function (err, result) {
-      if (err)
-         res.status(500).json(err)
+      if (err) {
+         console.log('err:', err)
+         res.status(500).send(err.message)
+      }
       else
          res.status(200).json(result.ads || [])
    })

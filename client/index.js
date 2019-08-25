@@ -1,6 +1,4 @@
 
-
-
 const mymap = L.map('map', { attributionControl: false }).setView([46.2, 4.1], 6);
 
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
@@ -62,9 +60,18 @@ function fetchMore(reset) {
    fetch("/ads?" + Object.keys(query).map(function (key) {
       return [key, query[key]].join('=')
    }).join("&"))
-
-      .then((response) => response.json())
+      .then((response) => {
+         return new Promise((resolve, reject) => {
+            if (response.ok)
+               response.json().then(resolve).catch(reject);
+            else
+               response.text().then(function (text) {
+                  reject(new Error(text));
+               });
+         })
+      })
       .then(function (ads) {
+
          console.log("ads", ads)
 
          offset += ads.length
@@ -139,8 +146,9 @@ function fetchMore(reset) {
          });
       }).catch(function (error) {
          console.log('error', error);
-         $("#more-ads").text('plus resultats (erreur)').prop("disabled", false)
-      });
+         toastr.error(error.message, { timeOut: 5000 })
+         $("#more-ads").text('plus resultats').prop("disabled", false)
+      })
 }
 
 fetchMore();
