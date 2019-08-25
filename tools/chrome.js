@@ -45,19 +45,19 @@ async function fetchAds(body, callback) {
    }
 
    try {
-      const result = await page.evaluate(async (url, bodyStr) => {
+      const result = await page.evaluate(async (url, bodyStr, headers) => {
          return fetch(url, {
             "method": "POST",
             "body": bodyStr,
             "credentials": "include",
-            "headers": tools.queryHeader,
+            "headers": headers
          }).then(res => {
             if (res.status === 200)
                return res.json()
             else
                throw new Error('res.status != 200')
          })
-      }, lbcApiSearchUrl, tools.JsonStringifyRandom(body));
+      }, lbcApiSearchUrl, tools.JsonStringifyRandom(body), tools.queryHeader);
 
       saveCookies(await page.cookies()); //save cookies
       await browser.close();
@@ -89,9 +89,9 @@ async function captcha(resetCookie, callback) {
 
    const browser = await puppeteer.launch({
       headless: false,
-      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
-      ignoreHTTPSErrors: true,
+      // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      // args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
+      // ignoreHTTPSErrors: true,
    });
 
    const page = await browser.newPage();
@@ -105,8 +105,11 @@ async function captcha(resetCookie, callback) {
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
 
-
       await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0 });
+
+      cookies = await page.cookies()
+      saveCookies(cookies); //save cookies
+   } else {
 
       cookies = await page.cookies()
       saveCookies(cookies); //save cookies

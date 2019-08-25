@@ -47,7 +47,7 @@ app.get('/ads', tools.paramsMiddleware, function (req, res) {
       sort_order: "desc"
    }, function (err, result) {
       if (err)
-         res.status(500).send(err.message)
+         res.status(500).json(err)
       else
          res.status(200).json(result.ads || [])
    })
@@ -131,7 +131,7 @@ app.get('/old', tools.paramsMiddleware, function (req, res) {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36',
             'Accept-Language': '*',
             'Accept': '*/*',
-            'Accept-Encoding':  'gzip, deflate, br',
+            'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'en-GB,en-US;q=0.9,en;q=0.8',
             'Content-Type': 'application/json',
             'Referer': "https://www.leboncoin.fr/recherche/",
