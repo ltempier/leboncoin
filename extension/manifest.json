@@ -1,0 +1,14 @@
+{
+   "name": "leboncoin carte",
+   "version": "1.0",
+   "description": "See leboncoin ads on a map",
+   "browser_action": {
+      "default_icon": "icon.png",
+      "default_popup": "index.html"
+   },
+   
+   "permissions": [
+      "*://*.leboncoin.fr/*"
+  ],
+   "manifest_version": 2
+}
