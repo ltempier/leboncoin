@@ -4,6 +4,7 @@ const chrome = require('./tools/chrome');
 const tools = require('./tools');
 const async = require('async');
 const fetch = require("node-fetch");
+const HttpsProxyAgent = require('https-proxy-agent');
 
 const body = {
    limit: 100,
@@ -42,24 +43,35 @@ const header = {
 TEST TOR Proxy
 ***************************************************************/
 
-axios({
-   method: 'post',
-   url: 'https://api.leboncoin.fr/finder/search',
-   data: body,
-   config: {
-      headers: header
-   },
-   // proxy: {
-   //    host: "51.15.143.226",
-   //    port: 8118
-   // },
-   timeout: 10000
-}).then(function (response) {
-   console.log('response.data', response.data)
-}).catch(function (error) {
-   console.log('error', error.message)
-});
+// axios({
+//    method: 'post',
+//    url: 'https://api.leboncoin.fr/finder/search',
+//    data: body,
+//    config: {
+//       headers: header
+//    },
+//    // proxy: {
+//    //    host: "51.15.143.226",
+//    //    port: 8118
+//    // },
+//    timeout: 10000
+// }).then(function (response) {
+//    console.log('response.data', response.data)
+// }).catch(function (error) {
+//    console.log('error', error.message)
+// });
 
+
+/**************************************************************
+TEST check fetch proxy
+***************************************************************/
+
+// fetch('https://ipinfo.io/ip', { "agent": new HttpsProxyAgent('http://163.172.131.115:1990') })
+//    .then(r => r.text())
+//    .then(r => console.log(r))
+//    .catch(function (error) {
+//       console.log(error)
+//    })
 
 /**************************************************************
 TEST fetch + JsonStringifyRandom

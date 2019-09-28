@@ -57,7 +57,7 @@ function fetchMore(reset) {
    })
 
 
-   fetch("/ads?" + Object.keys(query).map(function (key) {
+   fetch("/chrome?" + Object.keys(query).map(function (key) {
       return [key, query[key]].join('=')
    }).join("&"))
       .then((response) => {

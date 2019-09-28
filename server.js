@@ -25,7 +25,8 @@ app.use(express.static(path.resolve(__dirname, 'client')));
 // const Datastore = require('nedb');
 // const db = new Datastore({ filename: './ads.db', autoload: true });
 
-app.get('/ads', tools.paramsMiddleware, function (req, res) {
+
+app.get('/chrome', tools.paramsMiddleware, function (req, res) {
    chrome.fetchAds({
       limit: req.query.limit,
       offset: req.query.offset,
@@ -37,7 +38,9 @@ app.get('/ads', tools.paramsMiddleware, function (req, res) {
             ad_type: ["offer"],
             real_estate_type: ["3"] //terrain
          },
-         keywords: {},
+         keywords: {
+            text: "NOT " + tools.generateRandomText(1000)
+         },
          ranges: {
             "square": { "min": req.query.areaMin },
             "price": { "min": req.query.priceMin, "max": req.query.priceMax }
@@ -55,7 +58,6 @@ app.get('/ads', tools.paramsMiddleware, function (req, res) {
    })
 })
 
-
 app.post('/cookies', cors(), function (req, res) {
    if (req.body.cookies && req.body.cookies.length) {
       chrome.saveCookies(req.body.cookies)
@@ -65,10 +67,10 @@ app.post('/cookies', cors(), function (req, res) {
       req.body.cookies.length: ${req.body.cookies ? req.body.cookies.length : '-1'}`)
 })
 
-app.get('/test', tools.paramsMiddleware, function (req, res) {
-
+app.get('/ads', tools.paramsMiddleware, function (req, res) {
    fetch(chrome.lbcApiSearchUrl, {
       "method": "POST",
+      // "body": { "limit": 35, "limit_alu": 3, "filters": { "category": {}, "enums": { "ad_type": ["offer"] }, "location": { "locations": [{ "locationType": "region", "label": "Rhône-Alpes", "region_id": "22" }] }, "keywords": { "text": "NOT salut" }, "ranges": {} } },
       "body": tools.JsonStringifyRandom({
          limit: req.query.limit,
          offset: req.query.offset,
@@ -80,7 +82,9 @@ app.get('/test', tools.paramsMiddleware, function (req, res) {
                ad_type: ["offer"],
                real_estate_type: ["3"] //terrain
             },
-            keywords: {},
+            keywords: {
+               text: "NOT " + tools.generateRandomText(20)
+            },
             ranges: {
                "square": { "min": req.query.areaMin },
                "price": { "min": req.query.priceMin, "max": req.query.priceMax }
@@ -89,18 +93,23 @@ app.get('/test', tools.paramsMiddleware, function (req, res) {
          sort_by: "time",
          sort_order: "desc"
       }),
-      // "credentials": "include",
-      // "headers": {
-      //    'Accept': 'application/json',
-      //    'Content-Type': 'application/json',
-      //    'Cache': 'no-cache', // This is set on request
-      //    'Cookie': chrome.loadCookies().map(cookie=>[cookie.name, cookie.value].join('=')).join('; ')
-      // }
-   }).then(response => response.json())
+      "headers": tools.headers
+   })
+      .then((response) => {
+         return new Promise((resolve, reject) => {
+            if (response.ok)
+               response.json()
+                  .then(resolve)
+                  .catch(reject);
+            else
+               response.text()
+                  .then(text => reject(new Error(text)));
+         })
+      })
       .then(function (response) {
          res.status(200).json(response);
       }).catch(function (error) {
-         res.status(500).json(error.response);
+         res.status(500).send(error.response);
       })
 })
 
@@ -119,7 +128,9 @@ app.get('/old', tools.paramsMiddleware, function (req, res) {
                ad_type: ["offer"],
                real_estate_type: ["3"] //terrain
             },
-            keywords: {},
+            keywords: {
+               text: "NOT " + tools.generateRandomText(80)
+            },
             ranges: {
                "square": { "min": req.query.areaMin },
                "price": { "min": req.query.priceMin, "max": req.query.priceMax }
@@ -143,7 +154,7 @@ app.get('/old', tools.paramsMiddleware, function (req, res) {
    }).then(function (response) {
       res.status(200).json(response);
    }).catch(function (error) {
-      res.status(500).json(error.response);
+      res.status(500).send(error.message);
    });
 })
 
