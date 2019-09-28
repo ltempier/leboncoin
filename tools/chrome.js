@@ -102,8 +102,7 @@ async function fetchAds(body, callback) {
    }
 }
 
-async function 
-captcha(resetCookie, callback) {
+async function captcha(resetCookie, callback) {
 
    if (_.isFunction(resetCookie)) {
       callback = resetCookie
@@ -137,7 +136,7 @@ captcha(resetCookie, callback) {
       await page.setCookie(...loadCookies())
 
    console.log('goto', lbcUrl)
-   await page.goto(lbcUrl);
+   await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
 
    if (await page.title() !== pageBlockedTitle) {
       console.log('evaluate fetch')
@@ -153,7 +152,7 @@ captcha(resetCookie, callback) {
             else
                throw new Error('res.status != 200')
          })
-      }, lbcApiSearchUrl, tools.JsonStringifyRandom(defaultQueryBody), queryHeader);
+      }, lbcApiSearchUrl, JSON.stringify(defaultQueryBody, null), queryHeader);
    }
 
    let cookies = [];
