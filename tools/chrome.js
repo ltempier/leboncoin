@@ -21,9 +21,9 @@ const defaultQueryBody = {
          ad_type: ["offer"],
          real_estate_type: ["3"] //terrain
       },
-      // keywords: {
-      //    text: "NOT " + tools.generateRandomText(2000)
-      // },
+      keywords: {
+         text: "NOT " + tools.generateRandomText(2000)
+      },
       ranges: {
          "square": { "min": 15000 },
          "price": { "min": 10000, "max": 150000 }
