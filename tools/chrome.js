@@ -22,7 +22,7 @@ const defaultQueryBody = {
          real_estate_type: ["3"] //terrain
       },
       keywords: {
-         text: "NOT " + tools.generateRandomText(2000)
+         // text: "NOT " + tools.generateRandomText(2000)
       },
       ranges: {
          "square": { "min": 15000 },
@@ -136,7 +136,7 @@ async function captcha(resetCookie, callback) {
       await page.setCookie(...loadCookies())
 
    console.log('goto', lbcUrl)
-   await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
+   await page.goto(lbcUrl, { timeout: 0 });
 
    if (await page.title() !== pageBlockedTitle) {
       console.log('evaluate fetch')
@@ -158,16 +158,11 @@ async function captcha(resetCookie, callback) {
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
       console.log('blocked -> wait')
-
       await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0 });
+   } 
 
-      cookies = await page.cookies()
-      saveCookies(cookies); //save cookies
-   } else {
-
-      cookies = await page.cookies()
-      saveCookies(cookies); //save cookies
-   }
+   cookies = await page.cookies()
+   // saveCookies(cookies); //save cookies
 
    await browser.close();
    return cookies

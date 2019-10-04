@@ -9,6 +9,9 @@ const serverUrl = "http://danstontourdumonde.com:4000"
 
 chrome.captcha(true, function (err, cookies) {
    if (cookies && cookies.length) {
+
+      cookies = cookies.filter(c => c.name === 'datadome')
+
       console.log('POST cookies', cookies.length)
 
       axios.post(serverUrl + '/cookies', { cookies })
