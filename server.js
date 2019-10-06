@@ -28,7 +28,8 @@ app.use(express.static(path.resolve(__dirname, 'client')));
 
 app.get('/chrome', tools.paramsMiddleware, function (req, res) {
    chrome.fetchAds({
-      // limit: req.query.limit,
+      limit: req.query.limit,
+      // limit: 10,
       offset: req.query.offset,
       filters: {
          category: {
