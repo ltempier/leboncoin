@@ -39,7 +39,7 @@ app.get('/chrome', tools.paramsMiddleware, function (req, res) {
             real_estate_type: ["3"] //terrain
          },
          keywords: {
-            text: "NOT " + tools.generateRandomText(2000)
+            // text: "NOT " + tools.generateRandomText(2000)
          },
          ranges: {
             "square": { "min": req.query.areaMin },

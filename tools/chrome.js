@@ -138,9 +138,10 @@ async function captcha(resetCookie, callback) {
    console.log('goto', lbcUrl)
    await page.goto(lbcUrl, { timeout: 0 });
 
-   if (await page.title() !== pageBlockedTitle) {
-      console.log('evaluate fetch')
-      await page.evaluate(async (url, bodyStr, headers) => {
+
+   let fetchIdx = 0
+   while (await page.title() !== pageBlockedTitle) {
+      const res = await page.evaluate(async (url, bodyStr, headers) => {
          return fetch(url, {
             "method": "POST",
             "body": bodyStr,
@@ -153,13 +154,17 @@ async function captcha(resetCookie, callback) {
                throw new Error('res.status != 200')
          })
       }, lbcApiSearchUrl, JSON.stringify(defaultQueryBody, null), queryHeader);
+      console.log('evaluate fetch', fetchIdx++, res)
+
+      if (fetchIdx > 10)
+         break
    }
 
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
       console.log('blocked -> wait')
       await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0 });
-   } 
+   }
 
    cookies = await page.cookies()
    // saveCookies(cookies); //save cookies
