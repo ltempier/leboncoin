@@ -141,6 +141,8 @@ async function captcha(resetCookie, callback) {
 
    let fetchIdx = 0
    while (await page.title() !== pageBlockedTitle) {
+
+      console.log('evaluate fetch start', fetchIdx)
       const res = await page.evaluate(async (url, bodyStr, headers) => {
          return fetch(url, {
             "method": "POST",
@@ -154,7 +156,8 @@ async function captcha(resetCookie, callback) {
                throw new Error('res.status != 200')
          })
       }, lbcApiSearchUrl, JSON.stringify(defaultQueryBody, null), queryHeader);
-      console.log('evaluate fetch', fetchIdx++, res)
+
+      console.log('evaluate fetch', fetchIdx++, res.ads ? res.ads.length : '')
 
       if (fetchIdx > 10)
          break
