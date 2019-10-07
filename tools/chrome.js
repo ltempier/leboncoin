@@ -90,7 +90,10 @@ async function fetchAds(body, callback) {
             else
                throw new Error('res.status != 200')
          })
-      }, lbcApiSearchUrl, tools.JsonStringifyRandom(body), queryHeader);
+      }, lbcApiSearchUrl,
+         JSON.stringify(body, null)
+         // tools.JsonStringifyRandom(body)
+         , queryHeader);
 
       saveCookies(await page.cookies()); //save cookies
       await browser.close();
@@ -142,7 +145,8 @@ async function captcha(resetCookie, callback) {
    let fetchIdx = 0
    while (await page.title() !== pageBlockedTitle) {
 
-      console.log('evaluate fetch start', fetchIdx)
+      await wait(1000)
+
       const res = await page.evaluate(async (url, bodyStr, headers) => {
          return fetch(url, {
             "method": "POST",
@@ -174,6 +178,13 @@ async function captcha(resetCookie, callback) {
 
    await browser.close();
    return cookies
+
+   async function wait(timeout) {
+      timeout = timeout || 1000
+      return new Promise((resolve) => {
+         setTimeout(resolve, timeout)
+      })
+   }
 }
 
 
