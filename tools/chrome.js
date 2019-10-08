@@ -11,7 +11,7 @@ const cookiesJsonFilePath = path.join(__dirname, 'cookies.json');
 const pageBlockedTitle = "You have been blocked"
 
 const defaultQueryBody = {
-   limit: 10,
+   limit: 100,
    offset: 0,
    filters: {
       category: {
@@ -70,7 +70,7 @@ async function fetchAds(body, callback) {
    }
 
    await page.setCookie(...loadCookies())
-   await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
+   // await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
 
    if (await page.title() === pageBlockedTitle) {
       await browser.close();
@@ -90,10 +90,7 @@ async function fetchAds(body, callback) {
             else
                throw new Error('res.status != 200')
          })
-      }, lbcApiSearchUrl,
-         JSON.stringify(body, null)
-         // tools.JsonStringifyRandom(body)
-         , queryHeader);
+      }, lbcApiSearchUrl, JSON.stringify(body, null), queryHeader);
 
       saveCookies(await page.cookies()); //save cookies
       await browser.close();
@@ -163,7 +160,7 @@ async function captcha(resetCookie, callback) {
 
       console.log('evaluate fetch', fetchIdx++, res.ads ? res.ads.length : '')
 
-      if (fetchIdx > 10)
+      if (fetchIdx >= 3)
          break
    }
 
