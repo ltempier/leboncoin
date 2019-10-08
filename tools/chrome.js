@@ -1,5 +1,13 @@
 const _ = require('lodash');
-const puppeteer = require('puppeteer');
+
+
+const puppeteerExtra = require("puppeteer-extra")
+const pluginStealth = require("puppeteer-extra-plugin-stealth")
+puppeteerExtra.use(pluginStealth())
+
+// const puppeteer = require('puppeteer');
+const puppeteer = puppeteerExtra
+
 const fs = require('fs');
 const path = require('path');
 const tools = require('./index');
@@ -70,7 +78,7 @@ async function fetchAds(body, callback) {
    }
 
    await page.setCookie(...loadCookies())
-   // await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
+   await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
 
    if (await page.title() === pageBlockedTitle) {
       await browser.close();
@@ -92,7 +100,8 @@ async function fetchAds(body, callback) {
          })
       }, lbcApiSearchUrl, JSON.stringify(body, null), queryHeader);
 
-      saveCookies(await page.cookies()); //save cookies
+      // saveCookies(await page.cookies()); //save cookies
+
       await browser.close();
 
       return result
@@ -103,6 +112,7 @@ async function fetchAds(body, callback) {
 }
 
 async function captcha(resetCookie, callback) {
+
 
    if (_.isFunction(resetCookie)) {
       callback = resetCookie
@@ -119,12 +129,11 @@ async function captcha(resetCookie, callback) {
       return
    }
 
-
    const browser = await puppeteer.launch({
       headless: false,
-      // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      // args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
-      // ignoreHTTPSErrors: true,
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
+      ignoreHTTPSErrors: true,
    });
 
    const page = await browser.newPage();
