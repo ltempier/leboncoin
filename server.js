@@ -24,6 +24,9 @@ app.use(express.static(path.resolve(__dirname, 'client')));
 
 // const Datastore = require('nedb');
 // const db = new Datastore({ filename: './ads.db', autoload: true });
+app.get('/cookies', function (req, res) {
+   res.status(200).json(chrome.loadCookies())
+})
 
 
 app.get('/chrome', tools.paramsMiddleware, function (req, res) {

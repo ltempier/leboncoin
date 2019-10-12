@@ -3,8 +3,15 @@ const _ = require('lodash');
 
 const puppeteerExtra = require("puppeteer-extra")
 const pluginStealth = require("puppeteer-extra-plugin-stealth")
-puppeteerExtra.use(pluginStealth())
+const RecaptchaPlugin = require('puppeteer-extra-plugin-recaptcha')
 
+puppeteerExtra.use(pluginStealth())
+// puppeteerExtra.use(
+//    RecaptchaPlugin({
+//       provider: { id: '2captcha', token: 'XXXXXXX' },
+//       visualFeedback: true // colorize reCAPTCHAs (violet = detected, green = solved)
+//    })
+// )
 // const puppeteer = require('puppeteer');
 const puppeteer = puppeteerExtra
 
@@ -129,7 +136,7 @@ async function captcha(resetCookie, callback) {
       return
    }
 
-   const browser = await puppeteer.launch({
+   const browser = await require("puppeteer").launch({
       headless: false,
       executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
@@ -144,34 +151,34 @@ async function captcha(resetCookie, callback) {
    } else
       await page.setCookie(...loadCookies())
 
-   console.log('goto', lbcUrl)
-   await page.goto(lbcUrl, { timeout: 0 });
 
+   let gotoIdx = 0
+   do {
+      if (gotoIdx++ > 0)
+         await wait(1000)
 
-   let fetchIdx = 0
-   while (await page.title() !== pageBlockedTitle) {
+      console.log('goto', lbcUrl, gotoIdx)
+      await page.goto(lbcUrl, { timeout: 0 });
 
-      await wait(1000)
+   } while (await page.title() !== pageBlockedTitle && gotoIdx < 3)
 
-      const res = await page.evaluate(async (url, bodyStr, headers) => {
-         return fetch(url, {
-            "method": "POST",
-            "body": bodyStr,
-            "credentials": "include",
-            "headers": headers
-         }).then(res => {
-            if (res.status === 200)
-               return res.json()
-            else
-               throw new Error('res.status != 200')
-         })
-      }, lbcApiSearchUrl, JSON.stringify(defaultQueryBody, null), queryHeader);
+   // if (await page.title() !== pageBlockedTitle) {
+   //    const res = await page.evaluate(async (url, bodyStr, headers) => {
+   //       return fetch(url, {
+   //          "method": "POST",
+   //          "body": bodyStr,
+   //          "credentials": "include",
+   //          "headers": headers
+   //       }).then(res => {
+   //          if (res.status === 200)
+   //             return res.json()
+   //          else
+   //             throw new Error('res.status != 200')
+   //       })
+   //    }, lbcApiSearchUrl, JSON.stringify(defaultQueryBody, null), queryHeader);
 
-      console.log('evaluate fetch', fetchIdx++, res.ads ? res.ads.length : '')
-
-      if (fetchIdx >= 3)
-         break
-   }
+   //    console.log('evaluate fetch', res.ads ? res.ads.length : 'no ads')
+   // }
 
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
@@ -187,6 +194,9 @@ async function captcha(resetCookie, callback) {
 
    async function wait(timeout) {
       timeout = timeout || 1000
+
+      console.log('wait', timeout, 'ms')
+
       return new Promise((resolve) => {
          setTimeout(resolve, timeout)
       })
