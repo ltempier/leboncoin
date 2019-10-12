@@ -55,6 +55,8 @@ app.get('/chrome', tools.paramsMiddleware, function (req, res) {
    }, function (err, result) {
       if (err) {
          console.log('err:', err)
+         if (err.message === 'blocked')
+            chrome.saveCookies([])
          res.status(500).send(err.message)
       }
       else
