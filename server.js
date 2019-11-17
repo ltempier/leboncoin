@@ -73,6 +73,12 @@ app.post('/cookies', cors(), function (req, res) {
       req.body.cookies.length: ${req.body.cookies ? req.body.cookies.length : '-1'}`)
 })
 
+
+app.delete('/cookies', function (req, res) {
+   chrome.saveCookies([])
+   res.sendStatus(200)
+})
+
 app.get('/ads', tools.paramsMiddleware, function (req, res) {
    fetch(chrome.lbcApiSearchUrl, {
       "method": "POST",

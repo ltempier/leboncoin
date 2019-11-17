@@ -12,7 +12,7 @@ ssh ltr@server git -C "/home/ltr/git/leboncoin" stash
 ssh ltr@server git -C "/home/ltr/git/leboncoin" pull --rebase
 
 echo "****** NPM INSTALL ******"
-ssh ltr@server docker-compose -f /home/ltr/git/DockerCompose/docker-compose.yml run --rm leboncoin npm --prefix /usr/src  install
+ssh ltr@server docker-compose -f /home/ltr/git/DockerCompose/docker-compose.yml run --rm leboncoin npm --prefix /usr/src install
 
 sleep 3
 

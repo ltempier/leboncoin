@@ -4,7 +4,6 @@
    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
    "version": "0.2.0",
    "configurations": [
-   
       {
          "type": "node",
          "request": "launch",
@@ -12,7 +11,13 @@
          "name": "test2",
          "program": "${workspaceFolder}/server2/test2.js"
       },
-
+      {
+         "type": "node",
+         "request": "launch",
+         "runtimeVersion": "10.16.0",
+         "name": "banque postale",
+         "program": "${workspaceFolder}/lbp.js"
+      },
       {
          "type": "node",
          "request": "launch",

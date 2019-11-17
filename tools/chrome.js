@@ -138,9 +138,9 @@ async function captcha(resetCookie, callback) {
 
    const browser = await require("puppeteer").launch({
       headless: false,
-      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
-      ignoreHTTPSErrors: true,
+      // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      // args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
+      // ignoreHTTPSErrors: true,
    });
 
    const page = await browser.newPage();
@@ -154,11 +154,13 @@ async function captcha(resetCookie, callback) {
 
    let gotoIdx = 0
    do {
-      if (gotoIdx++ > 0)
-         await wait(1000)
-
-      console.log('goto', lbcUrl, gotoIdx)
-      await page.goto(lbcUrl, { timeout: 0 });
+      console.log('goto', lbcUrl, gotoIdx++)
+      await page.goto(lbcUrl, {
+         timeout: 0,
+         waitUntil: 'networkidle0'
+      });
+      // if (gotoIdx > 1)
+      //    await wait(3000)
 
    } while (await page.title() !== pageBlockedTitle && gotoIdx < 3)
 
@@ -176,7 +178,6 @@ async function captcha(resetCookie, callback) {
    //             throw new Error('res.status != 200')
    //       })
    //    }, lbcApiSearchUrl, JSON.stringify(defaultQueryBody, null), queryHeader);
-
    //    console.log('evaluate fetch', res.ads ? res.ads.length : 'no ads')
    // }
 
