@@ -7,22 +7,32 @@ const axios = require('axios');
 
 const serverUrl = "http://danstontourdumonde.com:4000"
 
-chrome.captcha(true, function (err, cookies) {
-   if (cookies && cookies.length) {
+axios.delete(serverUrl + '/cookies')
+   .then(response => {
+      console.log('DONE delete cookies')
 
-      cookies = cookies.filter(c => c.name === 'datadome')
+      chrome.captcha(true, function (err, cookies) {
+         if (cookies && cookies.length) {
 
-      console.log('POST cookies', cookies.length)
+            cookies = cookies.filter(c => c.name === 'datadome')
 
-      axios.post(serverUrl + '/cookies', { cookies })
-         .then(response => {
-            console.log('DONE new cookies:', cookies)
-         })
-         .catch(error => {
-            console.log('error', error.message)
-         })
-   } else {
-      console.log('WARNING NO COOKIES TO POST')
-   }
-})
+            console.log('POST cookies', cookies.length)
+
+            axios.post(serverUrl + '/cookies', { cookies })
+               .then(response => {
+                  console.log('DONE new cookies:', cookies)
+               })
+               .catch(error => {
+                  console.log('error', error.message)
+               })
+         } else {
+            console.log('WARNING NO COOKIES TO POST')
+         }
+      })
+
+   })
+   .catch(error => {
+      console.log('error', error.message)
+   })
+
 

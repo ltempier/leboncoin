@@ -54,7 +54,7 @@ module.exports = {
             {
                key: 'priceMin',
                default: 1000,
-               random: 100
+               random: 500
             },
             {
                key: 'priceMax',
@@ -98,7 +98,7 @@ module.exports = {
 
       ([...params.float, ...params.int]).forEach((intParam) => {
          if (req.query[intParam.key] && !isNaN(intParam.random))
-            req.query[intParam.key] += _.random(-intParam.random, intParam.random)
+            req.query[intParam.key] += parseInt(_.random(-intParam.random, intParam.random))
       })
 
       next()

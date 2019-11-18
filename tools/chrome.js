@@ -84,7 +84,6 @@ async function fetchAds(body, callback) {
       console.log('error setCookie', e)
    }
 
-   await page.setCookie(...loadCookies())
    await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
 
    if (await page.title() === pageBlockedTitle) {
@@ -144,25 +143,24 @@ async function captcha(resetCookie, callback) {
    });
 
    const page = await browser.newPage();
+
    await page.setViewport({ width: 1280, height: 960 });
 
    if (resetCookie === true) {
+      await page.setCookie()
+      // await page._client.send('Network.clearBrowserCookies');
       console.log('reset cookies')
    } else
       await page.setCookie(...loadCookies())
 
 
    let gotoIdx = 0
-   do {
-      console.log('goto', lbcUrl, gotoIdx++)
-      await page.goto(lbcUrl, {
-         timeout: 0,
-         waitUntil: 'networkidle0'
-      });
-      // if (gotoIdx > 1)
-      //    await wait(3000)
-
-   } while (await page.title() !== pageBlockedTitle && gotoIdx < 3)
+   // do {
+   console.log('goto', lbcUrl, gotoIdx++)
+   await page.goto(lbcUrl, {
+      timeout: 0,
+      waitUntil: 'networkidle0'
+   });
 
    // if (await page.title() !== pageBlockedTitle) {
    //    const res = await page.evaluate(async (url, bodyStr, headers) => {
@@ -181,6 +179,8 @@ async function captcha(resetCookie, callback) {
    //    console.log('evaluate fetch', res.ads ? res.ads.length : 'no ads')
    // }
 
+   // } while (await page.title() !== pageBlockedTitle && gotoIdx < 3)
+
    let cookies = [];
    if (await page.title() === pageBlockedTitle) {
       console.log('blocked -> wait')
@@ -191,13 +191,12 @@ async function captcha(resetCookie, callback) {
    // saveCookies(cookies); //save cookies
 
    await browser.close();
+
    return cookies
 
    async function wait(timeout) {
       timeout = timeout || 1000
-
       console.log('wait', timeout, 'ms')
-
       return new Promise((resolve) => {
          setTimeout(resolve, timeout)
       })

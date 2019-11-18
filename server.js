@@ -64,6 +64,10 @@ app.get('/chrome', tools.paramsMiddleware, function (req, res) {
    })
 })
 
+app.get('/cookies', function (req, res) {
+   res.status(200).json(chrome.loadCookies())
+})
+
 app.post('/cookies', cors(), function (req, res) {
    if (req.body.cookies && req.body.cookies.length) {
       chrome.saveCookies(req.body.cookies)

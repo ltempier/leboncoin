@@ -42,6 +42,13 @@
          "runtimeVersion": "10.16.0",
          "name": "Launch server",
          "program": "${workspaceFolder}/server.js"
+      },
+      {
+         "type": "node",
+         "request": "launch",
+         "runtimeVersion": "10.16.0",
+         "name": "Launch captcha",
+         "program": "${workspaceFolder}/captcha.js"
       }
    ]
 }
