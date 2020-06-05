@@ -70,7 +70,7 @@ async function fetchAds(body, callback) {
       return
    }
 
-   const browser = await puppeteer.launch({
+   const browser = await l({
       // headless: false
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -86,12 +86,12 @@ async function fetchAds(body, callback) {
 
    await page.goto(lbcUrl, { waitUntil: 'load', timeout: 0 });
 
-   if (await page.title() === pageBlockedTitle) {
-      await browser.close();
-      throw new Error('blocked')
-   }
 
    try {
+      if (await page.title() === pageBlockedTitle) {
+         throw new Error('blocked')
+      }
+
       const result = await page.evaluate(async (url, bodyStr, headers) => {
          return fetch(url, {
             "method": "POST",
@@ -106,19 +106,21 @@ async function fetchAds(body, callback) {
          })
       }, lbcApiSearchUrl, JSON.stringify(body, null), queryHeader);
 
-      // saveCookies(await page.cookies()); //save cookies
-
-      await browser.close();
+      //saveCookies(await page.cookies()); //save cookies
 
       return result
+
    } catch (err) {
-      await browser.close();
       throw err
+   }
+   
+   finally {
+      await page.close();
+      await browser.close();
    }
 }
 
 async function captcha(resetCookie, callback) {
-
 
    if (_.isFunction(resetCookie)) {
       callback = resetCookie
