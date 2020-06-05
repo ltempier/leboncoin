@@ -70,7 +70,7 @@ async function fetchAds(body, callback) {
       return
    }
 
-   const browser = await l({
+   const browser = await puppeteerExtra.launch({
       // headless: false
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -113,7 +113,7 @@ async function fetchAds(body, callback) {
    } catch (err) {
       throw err
    }
-   
+
    finally {
       await page.close();
       await browser.close();
