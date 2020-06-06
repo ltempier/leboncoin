@@ -106,7 +106,7 @@ async function fetchAds(body, callback) {
          })
       }, lbcApiSearchUrl, JSON.stringify(body, null), queryHeader);
 
-      //saveCookies(await page.cookies()); //save cookies
+      saveCookies(await page.cookies()); //save cookies
 
       return result
 
