@@ -23,7 +23,7 @@ const tools = require('./index');
 const lbcUrl = 'https://www.leboncoin.fr';
 const lbcApiSearchUrl = 'https://api.leboncoin.fr/finder/search';
 const cookiesJsonFilePath = path.join(__dirname, 'cookies.json');
-const pageBlockedTitle = "You have been blocked"
+const pageBlockedTitle = "leboncoin.fr"
 
 const defaultQueryBody = {
    limit: 100,
@@ -139,7 +139,7 @@ async function captcha(resetCookie, callback) {
 
    const browser = await require("puppeteer").launch({
       headless: false,
-      // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       // args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox', '--ignoreHTTPSErrors'],
       // ignoreHTTPSErrors: true,
    });
@@ -184,6 +184,11 @@ async function captcha(resetCookie, callback) {
    // } while (await page.title() !== pageBlockedTitle && gotoIdx < 3)
 
    let cookies = [];
+
+
+   //console.log(await page.title())
+
+
    if (await page.title() === pageBlockedTitle) {
       console.log('blocked -> wait')
       await page.waitForFunction(`document.title !== "${pageBlockedTitle}" || document.getElementsByClassName("recaptcha-checkbox-checkmark").length > 0`, { timeout: 0 });

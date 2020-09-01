@@ -40,7 +40,7 @@ app.get('/chrome', tools.paramsMiddleware, function (req, res) {
          },
          enums: {
             ad_type: ["offer"],
-            real_estate_type: ["3"] //terrain
+            real_estate_type: ["3", "1"] //terrain maison
          },
          keywords: {
             // text: "NOT " + tools.generateRandomText(2000)
